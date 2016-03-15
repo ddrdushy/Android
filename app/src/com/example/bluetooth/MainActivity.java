@@ -1,7 +1,10 @@
 package com.example.bluetooth;
 
+import java.util.Set;
+
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,14 +16,17 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	Button b1;
+	Button b1,b2;
 	BluetoothAdapter b_ada;
 	int BLUETOOTH_RE=1;
+	Set<BluetoothDevice> paired_devices;
+	String plist[];
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		b1=(Button)findViewById(R.id.button1);
+		b2=(Button)findViewById(R.id.button2);
 		
 		b1.setOnClickListener(new OnClickListener() {
 			
@@ -40,7 +46,29 @@ public class MainActivity extends Activity {
 						Intent i=new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
 						startActivityForResult(i,BLUETOOTH_RE);
 					}
+		
 				}
+			}
+		});
+		
+		b2.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				paired_devices=b_ada.getBondedDevices();
+				int count=paired_devices.size();
+				plist=new String[count];
+				int j=0;
+				for (BluetoothDevice device : paired_devices) {
+					plist[j]=device.getName().toString();
+					j++;
+				}
+				Bundle bn=new Bundle();
+				bn.putStringArray("key", plist);
+				Intent in=new Intent("pair_filter");
+				in.putExtras(bn);
+				startActivity(in);
 			}
 		});
 	}
