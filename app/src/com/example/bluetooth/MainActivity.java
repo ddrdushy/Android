@@ -1,10 +1,13 @@
 package com.example.bluetooth;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -20,7 +23,7 @@ public class MainActivity extends Activity {
 	BluetoothAdapter b_ada;
 	int BLUETOOTH_RE=1;
 	Set<BluetoothDevice> paired_devices;
-	String plist[];
+	ArrayList<String> plist=new ArrayList<String>();
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -53,19 +56,33 @@ public class MainActivity extends Activity {
 		
 		b2.setOnClickListener(new OnClickListener() {
 			
+			private BroadcastReceiver br;
+
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
+				b_ada.startDiscovery();
+				br = new BroadcastReceiver() {
+				    public void onReceive(Context context, Intent intent) {
+				        String action = intent.getAction();
+				        // Whenever a remote Bluetooth device is found
+				        if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+				            // Get the BluetoothDevice object from the Intent
+				            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+				            Toast.makeText(getBaseContext(), device.getName(), Toast.LENGTH_SHORT).show();
+				            // Add the name and address to an array adapter to show in a ListView
+				            plist.add(device.getName() + "\n" + device.getAddress());
+				        }
+				    }
+				};
+				
 				paired_devices=b_ada.getBondedDevices();
-				int count=paired_devices.size();
-				plist=new String[count];
-				int j=0;
+				//bint count=paired_devices.size();
 				for (BluetoothDevice device : paired_devices) {
-					plist[j]=device.getName().toString();
-					j++;
+					plist.add(device.getName().toString());
 				}
 				Bundle bn=new Bundle();
-				bn.putStringArray("key", plist);
+				bn.putStringArrayList("key", plist);
 				Intent in=new Intent("pair_filter");
 				in.putExtras(bn);
 				startActivity(in);
